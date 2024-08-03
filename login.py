@@ -20,11 +20,19 @@ class Login():
             self.send_data()
         input_email = ft.TextField(label = "Correo Electronico",
                                    height = 40,
-                                   icon = ft.icons.EMAIL)
+                                   icon = ft.icons.EMAIL,
+                                   content_padding = 4,
+                                   border_color = "#2B3A71",
+                                   border_radius = 6,
+                                   )
         input_pass = ft.TextField(label = "Contraseña",
                                   password = True,
                                   height = 40,
-                                  icon = ft.icons.KEY)
+                                  icon = ft.icons.KEY,
+                                  content_padding = 4,
+                                  border_color = "#2B3A71",
+                                  border_radius = 6,)
+        
         button_login = ft.ElevatedButton(text = "Entrar",
                                          color = "white",
                                          bgcolor = "#2B3A71",
@@ -79,15 +87,18 @@ class Login():
 
                 ft.Container(
                     col = 12,
-                    content = ft.Column(
+                    content = ft.Row(
+                    
                         controls = [
-                            ft.Text(value = "DESARROLLADO POR KDLH SYSTEM",
-                                    font_family = "Lato-Bold",
-                                    size = 14)
+                            ft.Text("Desarrollado por ",
+                                    font_family = "Lato-Bold"),
+                            ft.Image(src = "./images/logo_kdlh.png",
+                                     width = 80)
                         ],
-                        horizontal_alignment = ft.CrossAxisAlignment.CENTER
+                        alignment = ft.MainAxisAlignment.CENTER,
+                        vertical_alignment = ft.CrossAxisAlignment.CENTER
                     ),
-                    margin = 10
+                    margin = 20
                 ),
             ]
         )
@@ -121,7 +132,7 @@ class Login():
         })
 
         try:
-            server = requests.post(url =  env.URL_DEQAS+"service-login",
+            server = requests.post(url =  env.URL_DEQAS+"service-loginAppDriver",
                                data = form,
                                )
             response = server.json()
@@ -131,7 +142,7 @@ class Login():
                         ft.Icon(name = ft.icons.CHECKLIST_SHARP,
                                 color = ft.colors.YELLOW,
                                 size = 40),
-                        ft.Text(value = env.FORM_EMPTY,
+                        ft.Text(value = response["mensaje"],
                                 font_family = 'Lato-Bold')
                         ],
                         height = 60,
@@ -147,20 +158,14 @@ class Login():
                 mensaje = ''
                 icon = ''
 
-                if response["response"]["STR"] == 0:
-                    if "mensaje" in response["response"]:
-                        icon = ft.icons.KEY
-                        mensaje =  response["response"]['mensaje']
-                    else:
-                        icon = ft.icons.CHECKLIST_SHARP
-                        mensaje = env.FORM_EMPTY
+                if response["STR"] == 2:
 
                     modal.content = ft.Column(
                     controls = [
-                        ft.Icon(name = icon,
+                        ft.Icon(name = ft.icons.KEY,
                                 color = ft.colors.YELLOW,
                                 size = 40),
-                        ft.Text(value = mensaje,
+                        ft.Text(value = response["mensaje"],
                                 font_family = 'Lato-Bold')
                         ],
                         height = 60,
@@ -175,7 +180,6 @@ class Login():
                    
                     self.page.session.set("server", server.cookies.get('session'))
                     modal.open = False
-                    self.page.update()
 
                     from route import Route
                     self.page.route = "/home"
@@ -199,3 +203,13 @@ class Login():
             time.sleep(2)
             modal.open = False
             self.page.update()
+    
+    def close_session(self):
+        from route import Route
+
+        close = requests.get(url = env.URL_DEQAS+"service-closeSessionDriver",
+                             cookies = {"session": self.page.session.get("server")})
+        self.page.session.remove("server")
+        self.page.update()
+        self.page.route = "/"
+        Route().list_route(self.page)

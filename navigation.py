@@ -10,6 +10,8 @@ class Navigation:
         def nav_route(e):
             from route import Route
             option = e.control.selected_index
+            drawer.open = False
+            
             if option == 0:
                 self.page.route = "/home"
             elif option == 1:
@@ -18,13 +20,10 @@ class Navigation:
                 self.page.route = "/salir"
 
             Route().list_route(self.page)
-          
-
-        data = requests.get(url = env.URL_DEQAS+"getUserApp",
-                            cookie = {
-                                "session": self.page.session.get("server")
-                            })
-        data = data.json()
+        
+        data_user = requests.get(url = env.URL_DEQAS+"getUserApp",
+                                 cookies = {"session": self.page.session.get("server")})
+        data = data_user.json()
 
         self.page.appbar = ft.AppBar(
             leading = ft.IconButton(
@@ -43,6 +42,13 @@ class Navigation:
                 ft.Container(
                     content = ft.ResponsiveRow(
                         controls = [
+                            ft.Column(
+                                col = 12,
+                                controls = [
+                                    ft.Text(value = "Conductor:",
+                                            size = 12)
+                                ]
+                            ),
                             ft.Column(
                                 col = 2,
                                 controls = [
@@ -79,7 +85,7 @@ class Navigation:
                     icon = ft.icons.EXIT_TO_APP,
                 ),
             ],
-            on_change = nav_route
+            on_change = nav_route,
         )
 
     

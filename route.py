@@ -10,14 +10,19 @@ class Route:
         elif route == "/home":
             from navigation import Navigation
             from escaner import Escaner
-            page.clean()
+            page.controls.pop()
 
             Navigation(page).nav()
             Escaner(page).template()
-            page.update()
-
+    
         elif route == "/ordenes":
             from ordenes import Ordenes
-            page.clean()
+            page.controls.pop()
             Ordenes(page).template()
+
+        elif route == "/salir":
+            from login import Login
+            page.clean()
+            page.appbar = None
+            Login(page).close_session()
       
