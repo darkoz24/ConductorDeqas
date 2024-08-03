@@ -1,10 +1,12 @@
 import flet as ft
+import requests, env
 
 class Navigation:
     def __init__(self, page):
         self.page = page
 
     def nav(self):
+        
         def nav_route(e):
             from route import Route
             option = e.control.selected_index
@@ -17,6 +19,12 @@ class Navigation:
 
             Route().list_route(self.page)
           
+
+        data = requests.get(url = env.URL_DEQAS+"getUserApp",
+                            cookie = {
+                                "session": self.page.session.get("server")
+                            })
+        data = data.json()
 
         self.page.appbar = ft.AppBar(
             leading = ft.IconButton(
@@ -48,7 +56,7 @@ class Navigation:
                             ft.Column(
                                 col = 10,
                                 controls = [
-                                    ft.Text("Kevin De La Hoz",
+                                    ft.Text(data["name"],
                                             font_family = "Lato-Bold"),
                                 ]
                             )

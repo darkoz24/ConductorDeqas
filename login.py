@@ -1,5 +1,6 @@
 import flet as ft
-import requests
+import requests, env,  time
+
 
 class Login():
     def __init__(self, page):
@@ -28,7 +29,7 @@ class Login():
                                          color = "white",
                                          bgcolor = "#2B3A71",
                                          height = 40,
-                                         icon = ft.icons.DOOR_BACK_DOOR,
+                                         icon = ft.icons.LOGIN,
                                          on_click = prepare_data)
         views = ft.ResponsiveRow(
             controls = [
@@ -114,10 +115,87 @@ class Login():
         self.page.update()
 
         # Codigo para enviar el reuqest
-        modal.open = False
-        self.page.update()
+        form = dict({
+            "correo": self.email,
+            "contrasena": self.contrasena
+        })
 
-        from route import Route
-        self.page.route = "/home"
+        try:
+            server = requests.post(url =  env.URL_DEQAS+"service-login",
+                               data = form,
+                               )
+            response = server.json()
+            if response["STR"] == 0:
+                modal.content = ft.Column(
+                    controls = [
+                        ft.Icon(name = ft.icons.CHECKLIST_SHARP,
+                                color = ft.colors.YELLOW,
+                                size = 40),
+                        ft.Text(value = env.FORM_EMPTY,
+                                font_family = 'Lato-Bold')
+                        ],
+                        height = 60,
+                        horizontal_alignment = ft.CrossAxisAlignment.CENTER,
+                        alignment = ft.MainAxisAlignment.CENTER
+                )
+                self.page.update()
+                time.sleep(2)
+                modal.open = False
+                self.page.update()
 
-        Route().list_route(self.page)
+            else:
+                mensaje = ''
+                icon = ''
+
+                if response["response"]["STR"] == 0:
+                    if "mensaje" in response["response"]:
+                        icon = ft.icons.KEY
+                        mensaje =  response["response"]['mensaje']
+                    else:
+                        icon = ft.icons.CHECKLIST_SHARP
+                        mensaje = env.FORM_EMPTY
+
+                    modal.content = ft.Column(
+                    controls = [
+                        ft.Icon(name = icon,
+                                color = ft.colors.YELLOW,
+                                size = 40),
+                        ft.Text(value = mensaje,
+                                font_family = 'Lato-Bold')
+                        ],
+                        height = 60,
+                        horizontal_alignment = ft.CrossAxisAlignment.CENTER,
+                        alignment = ft.MainAxisAlignment.CENTER
+                    )
+                    self.page.update()
+                    time.sleep(2)
+                    modal.open = False
+                    self.page.update()
+                else:
+                   
+                    self.page.session.set("server", server.cookies.get('session'))
+                    modal.open = False
+                    self.page.update()
+
+                    from route import Route
+                    self.page.route = "/home"
+
+                    Route().list_route(self.page)
+
+        except Exception as e:
+            modal.content = ft.Column(
+                controls = [
+                    ft.Icon(name = ft.icons.CLOUD_OFF,
+                            color = ft.colors.RED,
+                            size = 40),
+                    ft.Text(value = env.ERROR_500,
+                            font_family = 'Lato-Bold')
+                ],
+                height = 60,
+                horizontal_alignment = ft.CrossAxisAlignment.CENTER,
+                alignment = ft.MainAxisAlignment.CENTER
+            )
+            self.page.update()
+            time.sleep(2)
+            modal.open = False
+            self.page.update()
